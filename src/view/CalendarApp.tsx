@@ -11,7 +11,7 @@ export interface CalendarAppProps {
 	hideAttendees: boolean;
 }
 
-export function CalendarApp({ title = "Google Calendar", isLoading, error, events, warnings = [], hideAttendees }: CalendarAppProps) {
+export function CalendarApp({ title = "Google Calendar", isLoading, error, events, warnings = [] }: CalendarAppProps) {
 	const calendars = getCalendars(events);
 
 	return (
@@ -47,16 +47,13 @@ export function CalendarApp({ title = "Google Calendar", isLoading, error, event
 					<div className="gcal-timeline-container">
 					{events.map((event) => (
 						<div className="gcal-timeline-item" key={`${event.calendarId}-${event.id}`}>
-							<div className={`gcal-timeline-dot ${toStatusClass(event.responseStatus)}`}></div>
 							<div
-								className="gcal-timeline-content"
-								style={{ borderLeftColor: getCalendarColor(event.calendarColor) }}
-							>
+								className="gcal-timeline-dot"
+								style={{ backgroundColor: getCalendarColor(event.calendarColor) }}
+							></div>
+							<div className="gcal-timeline-content">
 								<div className="gcal-time">{formatTimeRange(event)}</div>
 								<div className="gcal-title">{event.summary}</div>
-								{!hideAttendees && event.attendees.length > 0 ? (
-									<div className="gcal-attendees">Attendees: {event.attendees.join(", ")}</div>
-								) : null}
 							</div>
 						</div>
 					))}
@@ -79,21 +76,6 @@ function formatTimeRange(event: NormalizedEvent): string {
 		return "All day";
 	}
 	return `${formatTime(event.startTs)} - ${formatTime(event.endTs)}`;
-}
-
-function toStatusClass(status: NormalizedEvent["responseStatus"]): string {
-	switch (status) {
-		case "accepted":
-			return "gcal-status-accepted";
-		case "declined":
-			return "gcal-status-declined";
-		case "tentative":
-			return "gcal-status-tentative";
-		case "needsAction":
-			return "gcal-status-needs-action";
-		default:
-			return "gcal-status-unknown";
-	}
 }
 
 function getCalendarColor(color: string | undefined): string {

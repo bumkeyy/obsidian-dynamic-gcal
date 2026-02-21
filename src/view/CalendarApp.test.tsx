@@ -40,13 +40,14 @@ describe("CalendarApp", () => {
 		expect(screen.getByText("All-day note")).toBeInTheDocument();
 		expect(screen.getByText("All day")).toBeInTheDocument();
 		expect(screen.getByText("Personal")).toBeInTheDocument();
-		expect(screen.getByText("Attendees: alice@example.com")).toBeInTheDocument();
-		expect(document.querySelector(".gcal-status-accepted")).toBeInTheDocument();
+		expect(screen.queryByText(/Attendees:/)).toBeNull();
 		expect(document.querySelector(".gcal-calendar-chip")).toBeInTheDocument();
 		expect(document.querySelector(".gcal-calendar-chip-dot")).toHaveStyle({ backgroundColor: "#3367d6" });
+		const timelineDot = document.querySelector(".gcal-timeline-dot");
+		expect(timelineDot).toHaveStyle({ backgroundColor: "#3367d6" });
 	});
 
-	it("hides attendees when configured", () => {
+	it("does not render attendees regardless of hideAttendees", () => {
 		const { container } = render(
 			<CalendarApp
 				isLoading={false}
@@ -59,8 +60,8 @@ describe("CalendarApp", () => {
 						summary: "Standup",
 						responseStatus: "declined",
 						isAllDay: false,
-						startTs: Date.now(),
-						endTs: Date.now(),
+						startTs: new Date("2026-02-21T09:00:00Z").getTime(),
+						endTs: new Date("2026-02-21T10:00:00Z").getTime(),
 						attendees: ["alice@example.com"],
 					},
 				]}
@@ -69,7 +70,6 @@ describe("CalendarApp", () => {
 		);
 
 		expect(container.textContent).not.toContain("Attendees:");
-		expect(document.querySelector(".gcal-status-declined")).toBeInTheDocument();
 		expect(container.textContent).toContain(" - ");
 	});
 });

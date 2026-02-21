@@ -83,26 +83,6 @@
   border: 2px solid var(--background-primary);
 }
 
-.gcal-timeline-dot.gcal-status-accepted {
-  background-color: var(--color-green, var(--interactive-accent));
-}
-
-.gcal-timeline-dot.gcal-status-declined {
-  background-color: var(--color-red, var(--interactive-accent));
-}
-
-.gcal-timeline-dot.gcal-status-tentative {
-  background-color: var(--color-orange, var(--interactive-accent));
-}
-
-.gcal-timeline-dot.gcal-status-needs-action {
-  background-color: var(--text-muted);
-}
-
-.gcal-timeline-dot.gcal-status-unknown {
-  background-color: var(--interactive-accent);
-}
-
 .gcal-time {
   font-size: var(--font-ui-small);
   color: var(--text-muted);
@@ -122,13 +102,6 @@
   color: var(--text-faint);
 }
 
-.gcal-attendees {
-  margin-top: 4px;
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-}
-
 .gcal-timeline-content {
-  border-left: 2px solid transparent;
   padding-left: 8px;
 }
