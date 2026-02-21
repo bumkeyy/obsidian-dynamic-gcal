@@ -1,2 +1,1 @@
-// Shared Vitest setup for this plugin.
-export {};
+import "@testing-library/jest-dom/vitest";
