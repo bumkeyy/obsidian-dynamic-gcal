@@ -1,6 +1,8 @@
 export interface GoogleEventAttendee {
 	email?: string;
 	displayName?: string;
+	self?: boolean;
+	responseStatus?: "needsAction" | "declined" | "tentative" | "accepted";
 }
 
 export interface GoogleEvent {
@@ -21,14 +23,21 @@ export interface NormalizedEvent {
 	id: string;
 	calendarId: string;
 	calendarName: string;
+	calendarColor?: string;
 	summary: string;
+	responseStatus?: "needsAction" | "declined" | "tentative" | "accepted" | "unknown";
 	isAllDay: boolean;
 	startTs: number;
 	endTs: number;
 	attendees: string[];
 }
 
-export function normalizeGoogleEvent(event: GoogleEvent, calendarId: string, calendarName: string): NormalizedEvent {
+export function normalizeGoogleEvent(
+	event: GoogleEvent,
+	calendarId: string,
+	calendarName: string,
+	calendarColor?: string,
+): NormalizedEvent {
 	const start = parseGoogleDate(event.start);
 	if (!start) {
 		throw new Error("Google event is missing start date/dateTime.");
@@ -39,12 +48,16 @@ export function normalizeGoogleEvent(event: GoogleEvent, calendarId: string, cal
 		.map((item) => item.displayName ?? item.email ?? "")
 		.map((item) => item.trim())
 		.filter((item) => item.length > 0);
+	const selfAttendee = (event.attendees ?? []).find((attendee) => attendee.self);
+	const responseStatus = selfAttendee?.responseStatus ?? "unknown";
 
 	return {
 		id: event.id ?? `${calendarId}-${start.timestamp}`,
 		calendarId,
 		calendarName,
+		calendarColor,
 		summary: event.summary?.trim() || "(Untitled)",
+		responseStatus,
 		isAllDay: start.isAllDay,
 		startTs: start.timestamp,
 		endTs: end.timestamp,

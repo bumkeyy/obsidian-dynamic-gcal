@@ -2,6 +2,9 @@ export interface CalendarListItem {
 	id: string;
 	summary: string;
 	primary?: boolean;
+	backgroundColor?: string;
+	foregroundColor?: string;
+	colorId?: string;
 }
 
 export interface MatchCalendarsResult {

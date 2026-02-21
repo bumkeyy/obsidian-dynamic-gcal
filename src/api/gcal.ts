@@ -46,7 +46,13 @@ export async function fetchCalendarEvents(options: FetchCalendarEventsOptions): 
 	const eventLists = await Promise.all(
 		selected.matched.map(async (calendar) => {
 			try {
-				return await fetchEventsForCalendar(authFetch, calendar.id, calendar.summary, options.targetDate);
+				return await fetchEventsForCalendar(
+					authFetch,
+					calendar.id,
+					calendar.summary,
+					options.targetDate,
+					calendar.backgroundColor,
+				);
 			} catch {
 				warnings.push(`Failed to fetch events for calendar: ${calendar.summary}`);
 				return [];
@@ -79,6 +85,7 @@ export async function fetchEventsForCalendar(
 	calendarId: string,
 	calendarName: string,
 	targetDate: string,
+	calendarColor?: string,
 ): Promise<NormalizedEvent[]> {
 	const query = buildEventQueryParams(targetDate);
 	const encodedCalendarId = encodeURIComponent(calendarId);
@@ -89,7 +96,7 @@ export async function fetchEventsForCalendar(
 	}
 
 	const json = (await response.json()) as EventListResponse;
-	return (json.items ?? []).map((item) => normalizeGoogleEvent(item, calendarId, calendarName));
+	return (json.items ?? []).map((item) => normalizeGoogleEvent(item, calendarId, calendarName, calendarColor));
 }
 
 function createAuthorizedFetch(

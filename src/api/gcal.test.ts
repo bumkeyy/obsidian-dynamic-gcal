@@ -15,7 +15,11 @@ describe("fetchCalendarEvents", () => {
 	it("fetches primary calendar by default", async () => {
 		const fetchFn = vi
 			.fn()
-			.mockResolvedValueOnce(jsonResponse(200, { items: [{ id: "primary", summary: "Personal", primary: true }] }))
+			.mockResolvedValueOnce(
+				jsonResponse(200, {
+					items: [{ id: "primary", summary: "Personal", primary: true, backgroundColor: "#3367d6" }],
+				}),
+			)
 			.mockResolvedValueOnce(
 				jsonResponse(200, {
 					items: [{ id: "e1", summary: "Breakfast", start: { dateTime: "2026-02-21T08:00:00Z" }, end: { dateTime: "2026-02-21T08:30:00Z" } }],
@@ -31,6 +35,7 @@ describe("fetchCalendarEvents", () => {
 
 		expect(result.events).toHaveLength(1);
 		expect(result.events[0]?.summary).toBe("Breakfast");
+		expect(result.events[0]?.calendarColor).toBe("#3367d6");
 		expect(result.warnings).toEqual([]);
 		expect(result.usedRefresh).toBe(false);
 	});
