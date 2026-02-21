@@ -11,7 +11,14 @@ export interface CalendarAppProps {
 	hideAttendees: boolean;
 }
 
-export function CalendarApp({ title = "Google Calendar", isLoading, error, events, warnings = [] }: CalendarAppProps) {
+export function CalendarApp({
+	title = "Google Calendar",
+	isLoading,
+	error,
+	events,
+	warnings = [],
+	hideAttendees,
+}: CalendarAppProps) {
 	const calendars = getCalendars(events);
 
 	return (
@@ -54,6 +61,9 @@ export function CalendarApp({ title = "Google Calendar", isLoading, error, event
 							<div className="gcal-timeline-content">
 								<div className="gcal-time">{formatTimeRange(event)}</div>
 								<div className="gcal-title">{event.summary}</div>
+								{!hideAttendees && event.attendees.length > 0 ? (
+									<div className="gcal-attendees">Attendees: {event.attendees.join(", ")}</div>
+								) : null}
 							</div>
 						</div>
 					))}

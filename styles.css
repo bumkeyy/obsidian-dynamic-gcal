@@ -105,3 +105,8 @@
 .gcal-timeline-content {
   padding-left: 8px;
 }
+
+.gcal-attendees {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}

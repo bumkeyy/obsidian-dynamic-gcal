@@ -15,7 +15,7 @@ describe("CalendarApp", () => {
 		expect(screen.getByRole("alert")).toHaveTextContent("Auth failed");
 	});
 
-	it("renders events and attendee visibility based on option", () => {
+	it("renders attendees when hideAttendees is false", () => {
 		render(
 			<CalendarApp
 				isLoading={false}
@@ -40,14 +40,14 @@ describe("CalendarApp", () => {
 		expect(screen.getByText("All-day note")).toBeInTheDocument();
 		expect(screen.getByText("All day")).toBeInTheDocument();
 		expect(screen.getByText("Personal")).toBeInTheDocument();
-		expect(screen.queryByText(/Attendees:/)).toBeNull();
+		expect(screen.getByText("Attendees: alice@example.com")).toBeInTheDocument();
 		expect(document.querySelector(".gcal-calendar-chip")).toBeInTheDocument();
 		expect(document.querySelector(".gcal-calendar-chip-dot")).toHaveStyle({ backgroundColor: "#3367d6" });
 		const timelineDot = document.querySelector(".gcal-timeline-dot");
 		expect(timelineDot).toHaveStyle({ backgroundColor: "#3367d6" });
 	});
 
-	it("does not render attendees regardless of hideAttendees", () => {
+	it("hides attendees when hideAttendees is true", () => {
 		const { container } = render(
 			<CalendarApp
 				isLoading={false}
