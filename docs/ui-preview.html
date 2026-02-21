@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Dynamic GCal UI Preview</title>
+	<link rel="stylesheet" href="../styles.css" />
+	<style>
+		:root {
+			color-scheme: dark;
+			--background-primary: #1e1e1e;
+			--background-secondary: #1e1e1e;
+			--background-modifier-border: #3a3a3a;
+			--text-normal: #e6e6e6;
+			--text-muted: #a9a9a9;
+			--text-faint: #808080;
+			--interactive-accent: #7a65c9;
+			--font-interface: "Inter", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+			--font-ui-medium: 18px;
+			--font-ui-small: 12px;
+			--font-ui-smaller: 11px;
+		}
+
+		body {
+			margin: 0;
+			background: #1a1a1a;
+			color: var(--text-normal);
+		}
+
+		.preview-wrap {
+			max-width: 760px;
+			margin: 32px auto;
+			padding: 16px 24px;
+		}
+
+		.preview-note {
+			font-family: var(--font-interface);
+			font-size: 12px;
+			color: var(--text-muted);
+			margin-bottom: 14px;
+		}
+	</style>
+</head>
+<body>
+	<div class="preview-wrap">
+		<p class="preview-note">README 노출용 정적 미리보기 화면입니다.</p>
+		<section class="gcal-root">
+			<header class="gcal-heading">Google Calendar</header>
+			<div class="gcal-calendar-legend">
+				<div class="gcal-calendar-chip">
+					<span class="gcal-calendar-chip-dot" style="background-color: #3367d6;"></span>
+					<span>team-alpha@example.com</span>
+				</div>
+				<div class="gcal-calendar-chip">
+					<span class="gcal-calendar-chip-dot" style="background-color: #16a765;"></span>
+					<span>club-schedule@example.com</span>
+				</div>
+			</div>
+			<div class="gcal-timeline-container">
+				<div class="gcal-timeline-item">
+					<div class="gcal-timeline-dot" style="background-color: #3367d6;"></div>
+					<div class="gcal-timeline-content">
+						<div class="gcal-time">All day</div>
+						<div class="gcal-title">Interstellar Museum Open Day</div>
+					</div>
+				</div>
+				<div class="gcal-timeline-item">
+					<div class="gcal-timeline-dot" style="background-color: #16a765;"></div>
+					<div class="gcal-timeline-content">
+						<div class="gcal-time">오전 09:00 - 오전 10:00</div>
+						<div class="gcal-title">Robotics Club Weekly Check-in</div>
+					</div>
+				</div>
+				<div class="gcal-timeline-item">
+					<div class="gcal-timeline-dot" style="background-color: #16a765;"></div>
+					<div class="gcal-timeline-content">
+						<div class="gcal-time">오전 11:00 - 오전 12:00</div>
+						<div class="gcal-title">City Library Workshop: Map Design</div>
+					</div>
+				</div>
+				<div class="gcal-timeline-item">
+					<div class="gcal-timeline-dot" style="background-color: #3367d6;"></div>
+					<div class="gcal-timeline-content">
+						<div class="gcal-time">오후 10:30 - 오후 11:00</div>
+						<div class="gcal-title">Night Photography Session</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+</body>
+</html>

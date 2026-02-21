@@ -24,6 +24,11 @@
 
 ## Usage
 
+UI preview (for README/demo):
+
+- Local file: [`docs/ui-preview.html`](docs/ui-preview.html)
+- GitHub Pages: [UI preview](https://bumkeyy.github.io/obsidian-dynamic-gcal/docs/ui-preview.html)
+
 Use this block in any note:
 
 ```gcal
