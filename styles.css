@@ -1,0 +1,134 @@
+.gcal-root {
+  margin: 8px 0;
+}
+
+.gcal-heading {
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.gcal-state {
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+}
+
+.gcal-warnings {
+  margin: 0 0 8px 18px;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-family: var(--font-interface);
+}
+
+.gcal-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px 0;
+}
+
+.gcal-calendar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+}
+
+.gcal-calendar-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.gcal-timeline-container {
+  position: relative;
+  padding-left: 24px;
+  margin: 16px 0;
+  font-family: var(--font-interface);
+}
+
+.gcal-timeline-container::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 6px;
+  width: 2px;
+  background-color: var(--background-modifier-border);
+}
+
+.gcal-timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.gcal-timeline-dot {
+  position: absolute;
+  left: -23px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--interactive-accent);
+  border: 2px solid var(--background-primary);
+}
+
+.gcal-timeline-dot.gcal-status-accepted {
+  background-color: var(--color-green, var(--interactive-accent));
+}
+
+.gcal-timeline-dot.gcal-status-declined {
+  background-color: var(--color-red, var(--interactive-accent));
+}
+
+.gcal-timeline-dot.gcal-status-tentative {
+  background-color: var(--color-orange, var(--interactive-accent));
+}
+
+.gcal-timeline-dot.gcal-status-needs-action {
+  background-color: var(--text-muted);
+}
+
+.gcal-timeline-dot.gcal-status-unknown {
+  background-color: var(--interactive-accent);
+}
+
+.gcal-time {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.gcal-title {
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.gcal-calendar {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
+.gcal-attendees {
+  margin-top: 4px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.gcal-timeline-content {
+  border-left: 2px solid transparent;
+  padding-left: 8px;
+}

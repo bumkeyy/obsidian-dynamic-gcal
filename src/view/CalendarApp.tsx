@@ -12,67 +12,110 @@ export interface CalendarAppProps {
 }
 
 export function CalendarApp({ title = "Google Calendar", isLoading, error, events, warnings = [], hideAttendees }: CalendarAppProps) {
-	return (
-		<section
-			data-testid="calendar-app"
-			style={{
-				border: "1px solid var(--background-modifier-border)",
-				background: "var(--background-secondary)",
-				color: "var(--text-normal)",
-				padding: "12px",
-				borderRadius: "8px",
-				fontSize: "0.95rem",
-			}}
-		>
-			<header style={{ marginBottom: "8px", fontWeight: 600 }}>{title}</header>
+	const calendars = getCalendars(events);
 
-			{isLoading ? <p style={{ color: "var(--text-muted)", margin: 0 }}>Loading events...</p> : null}
-			{error ? <p role="alert" style={{ color: "var(--text-normal)", margin: "0 0 8px 0" }}>{error}</p> : null}
+	return (
+		<section data-testid="calendar-app" className="gcal-root">
+			<header className="gcal-heading">{title}</header>
+
+			{isLoading ? <p className="gcal-state">Loading events...</p> : null}
+			{error ? <p className="gcal-state" role="alert">{error}</p> : null}
 
 			{warnings.length > 0 ? (
-				<ul style={{ margin: "0 0 8px 0", color: "var(--text-muted)", paddingLeft: "18px" }}>
+				<ul className="gcal-warnings">
 					{warnings.map((warning) => (
 						<li key={warning}>{warning}</li>
 					))}
 				</ul>
 			) : null}
 
-			{!isLoading && !error && events.length === 0 ? (
-				<p style={{ color: "var(--text-muted)", margin: 0 }}>No events for this date.</p>
-			) : null}
+			{!isLoading && !error && events.length === 0 ? <p className="gcal-state">No events for this date.</p> : null}
 
 			{events.length > 0 ? (
-				<ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "8px" }}>
-					{events.map((event) => (
-						<li
-							key={`${event.calendarId}-${event.id}`}
-							style={{
-								border: "1px solid var(--background-modifier-border)",
-								background: "var(--background-primary)",
-								padding: "8px",
-								borderRadius: "6px",
-							}}
-						>
-							<div style={{ fontWeight: 600 }}>{event.summary}</div>
-							<div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-								{event.isAllDay ? "All day" : formatEventTime(event.startTs)} · {event.calendarName}
+				<>
+					<div className="gcal-calendar-legend">
+						{calendars.map((calendar) => (
+							<div className="gcal-calendar-chip" key={calendar.calendarId}>
+								<span
+									className="gcal-calendar-chip-dot"
+									style={{ backgroundColor: getCalendarColor(calendar.calendarColor) }}
+								></span>
+								<span>{calendar.calendarName}</span>
 							</div>
-							{!hideAttendees && event.attendees.length > 0 ? (
-								<div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "4px" }}>
-									Attendees: {event.attendees.join(", ")}
-								</div>
-							) : null}
-						</li>
+						))}
+					</div>
+					<div className="gcal-timeline-container">
+					{events.map((event) => (
+						<div className="gcal-timeline-item" key={`${event.calendarId}-${event.id}`}>
+							<div className={`gcal-timeline-dot ${toStatusClass(event.responseStatus)}`}></div>
+							<div
+								className="gcal-timeline-content"
+								style={{ borderLeftColor: getCalendarColor(event.calendarColor) }}
+							>
+								<div className="gcal-time">{formatTimeRange(event)}</div>
+								<div className="gcal-title">{event.summary}</div>
+								{!hideAttendees && event.attendees.length > 0 ? (
+									<div className="gcal-attendees">Attendees: {event.attendees.join(", ")}</div>
+								) : null}
+							</div>
+						</div>
 					))}
-				</ul>
+					</div>
+				</>
 			) : null}
 		</section>
 	);
 }
 
-function formatEventTime(timestamp: number): string {
+function formatTime(timestamp: number): string {
 	return new Intl.DateTimeFormat(undefined, {
 		hour: "2-digit",
 		minute: "2-digit",
 	}).format(new Date(timestamp));
+}
+
+function formatTimeRange(event: NormalizedEvent): string {
+	if (event.isAllDay) {
+		return "All day";
+	}
+	return `${formatTime(event.startTs)} - ${formatTime(event.endTs)}`;
+}
+
+function toStatusClass(status: NormalizedEvent["responseStatus"]): string {
+	switch (status) {
+		case "accepted":
+			return "gcal-status-accepted";
+		case "declined":
+			return "gcal-status-declined";
+		case "tentative":
+			return "gcal-status-tentative";
+		case "needsAction":
+			return "gcal-status-needs-action";
+		default:
+			return "gcal-status-unknown";
+	}
+}
+
+function getCalendarColor(color: string | undefined): string {
+	if (color && /^#(?:[0-9a-fA-F]{3}){1,2}$/u.test(color)) {
+		return color;
+	}
+	return "var(--interactive-accent)";
+}
+
+function getCalendars(events: NormalizedEvent[]): Array<{ calendarId: string; calendarName: string; calendarColor?: string }> {
+	const seen = new Set<string>();
+	const calendars: Array<{ calendarId: string; calendarName: string; calendarColor?: string }> = [];
+	for (const event of events) {
+		if (seen.has(event.calendarId)) {
+			continue;
+		}
+		seen.add(event.calendarId);
+		calendars.push({
+			calendarId: event.calendarId,
+			calendarName: event.calendarName,
+			calendarColor: event.calendarColor,
+		});
+	}
+	return calendars;
 }

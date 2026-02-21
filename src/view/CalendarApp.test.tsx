@@ -24,7 +24,9 @@ describe("CalendarApp", () => {
 						id: "1",
 						calendarId: "primary",
 						calendarName: "Personal",
+						calendarColor: "#3367d6",
 						summary: "All-day note",
+						responseStatus: "accepted",
 						isAllDay: true,
 						startTs: 1,
 						endTs: 2,
@@ -36,8 +38,12 @@ describe("CalendarApp", () => {
 		);
 
 		expect(screen.getByText("All-day note")).toBeInTheDocument();
-		expect(screen.getByText("All day · Personal")).toBeInTheDocument();
+		expect(screen.getByText("All day")).toBeInTheDocument();
+		expect(screen.getByText("Personal")).toBeInTheDocument();
 		expect(screen.getByText("Attendees: alice@example.com")).toBeInTheDocument();
+		expect(document.querySelector(".gcal-status-accepted")).toBeInTheDocument();
+		expect(document.querySelector(".gcal-calendar-chip")).toBeInTheDocument();
+		expect(document.querySelector(".gcal-calendar-chip-dot")).toHaveStyle({ backgroundColor: "#3367d6" });
 	});
 
 	it("hides attendees when configured", () => {
@@ -49,7 +55,9 @@ describe("CalendarApp", () => {
 						id: "1",
 						calendarId: "primary",
 						calendarName: "Personal",
+						calendarColor: "#3367d6",
 						summary: "Standup",
+						responseStatus: "declined",
 						isAllDay: false,
 						startTs: Date.now(),
 						endTs: Date.now(),
@@ -61,5 +69,7 @@ describe("CalendarApp", () => {
 		);
 
 		expect(container.textContent).not.toContain("Attendees:");
+		expect(document.querySelector(".gcal-status-declined")).toBeInTheDocument();
+		expect(container.textContent).toContain(" - ");
 	});
 });
