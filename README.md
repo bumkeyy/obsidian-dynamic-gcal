@@ -1,5 +1,9 @@
 # Dynamic Google Calendar for Obsidian
 
+> [!WARNING]
+> This plugin is maintained for personal use.
+> Please treat this repository as code reference only.
+
 `obsidian-dynamic-gcal` renders Google Calendar events in notes using a `gcal` code block and note frontmatter.
 
 ## Key goals
