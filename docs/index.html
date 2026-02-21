@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>옵시디언 구글 캘린더 인증</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .loader { margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid #7a65c9; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h2>인증이 완료되었습니다 🎉</h2>
+    <p>옵시디언 앱으로 돌아가는 중입니다...</p>
+    <div class="loader"></div>
+    <script>
+        // 구글에서 넘겨준 인증 코드(code)를 그대로 옵시디언으로 전달합니다.
+        const queryString = window.location.search;
+        if (queryString.includes('code=')) {
+            window.location.replace("obsidian://gcal-auth" + queryString);
+        } else {
+            document.body.innerHTML += "<p style='color:red;'>인증 코드를 받지 못했습니다. 창을 닫고 다시 시도해 주세요.</p>";
+        }
+    </script>
+</body>
+</html>
