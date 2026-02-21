@@ -11,7 +11,7 @@ import { DEFAULT_SETTINGS, GCAL_READONLY_SCOPE, type AuthResult, type DynamicGca
 import { CalendarApp } from "./view/CalendarApp";
 import { ReactChild } from "./view/ReactChild";
 
-const REDIRECT_URI = "obsidian://gcal-auth";
+const REDIRECT_URI = "https://bumkeyy.github.io/obsidian-dynamic-gcal/";
 const MIN_VALIDITY_MS = 60_000;
 
 interface PendingAuthSession {
