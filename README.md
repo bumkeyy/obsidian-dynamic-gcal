@@ -26,14 +26,14 @@
 
 UI preview (for README/demo):
 
-- Local file: [`docs/ui-preview.html`](docs/ui-preview.html)
-- GitHub Pages: [UI preview](https://bumkeyy.github.io/obsidian-dynamic-gcal/docs/ui-preview.html)
+<img width="430" height="364" alt="image" src="https://github.com/user-attachments/assets/1757f557-06a2-4722-86e1-27a1033a1879" />
+
 
 Use this block in any note:
 
 ```gcal
-date: frontmatter
-calendar: personal, work
+date: frontmatter (or 2026-02-21)
+calendar: team-alpha@example.com, club-schedule@example.com
 hide attendees
 ```
 
