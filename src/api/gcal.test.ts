@@ -14,7 +14,7 @@ function jsonResponse(status: number, body: unknown): Response {
 describe("fetchCalendarEvents", () => {
 	it("fetches primary calendar by default", async () => {
 		const fetchFn = vi
-			.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+			.fn()
 			.mockResolvedValueOnce(jsonResponse(200, { items: [{ id: "primary", summary: "Personal", primary: true }] }))
 			.mockResolvedValueOnce(
 				jsonResponse(200, {
@@ -26,18 +26,18 @@ describe("fetchCalendarEvents", () => {
 			accessToken: "token",
 			targetDate: "2026-02-21",
 			calendarSelectors: [],
-			fetchFn,
+			fetchFn: fetchFn as unknown as typeof fetch,
 		});
 
 		expect(result.events).toHaveLength(1);
-		expect(result.events[0].summary).toBe("Breakfast");
+		expect(result.events[0]?.summary).toBe("Breakfast");
 		expect(result.warnings).toEqual([]);
 		expect(result.usedRefresh).toBe(false);
 	});
 
 	it("retries once on 401 by refreshing token", async () => {
 		const fetchFn = vi
-			.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+			.fn()
 			.mockResolvedValueOnce(new Response(null, { status: 401 }))
 			.mockResolvedValueOnce(jsonResponse(200, { items: [{ id: "primary", summary: "Personal", primary: true }] }))
 			.mockResolvedValueOnce(jsonResponse(200, { items: [] }));
@@ -47,7 +47,7 @@ describe("fetchCalendarEvents", () => {
 			accessToken: "old-token",
 			targetDate: "2026-02-21",
 			calendarSelectors: [],
-			fetchFn,
+			fetchFn: fetchFn as unknown as typeof fetch,
 			onUnauthorized,
 		});
 
@@ -57,14 +57,14 @@ describe("fetchCalendarEvents", () => {
 
 	it("collects unresolved calendar warning", async () => {
 		const fetchFn = vi
-			.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+			.fn()
 			.mockResolvedValueOnce(jsonResponse(200, { items: [{ id: "primary", summary: "Personal", primary: true }] }));
 
 		const result = await fetchCalendarEvents({
 			accessToken: "token",
 			targetDate: "2026-02-21",
 			calendarSelectors: ["missing"],
-			fetchFn,
+			fetchFn: fetchFn as unknown as typeof fetch,
 		});
 
 		expect(result.events).toEqual([]);

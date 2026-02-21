@@ -16,6 +16,13 @@ export class ReactChild extends MarkdownRenderChild {
 		this.root.render(this.renderView());
 	}
 
+	update(renderView: () => React.ReactElement): void {
+		this.renderView = renderView;
+		if (this.root) {
+			this.root.render(this.renderView());
+		}
+	}
+
 	onunload(): void {
 		if (this.root) {
 			this.root.unmount();
