@@ -6,6 +6,7 @@ const DEFAULT_REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke";
 
 export interface OAuthClientConfig {
 	clientId: string;
+	clientSecret: string;
 	redirectUri: string;
 	scopes: string[];
 	authEndpoint?: string;
@@ -95,6 +96,15 @@ export async function exchangeCodeForTokens(
 	const body = new URLSearchParams({
 		code,
 		client_id: config.clientId,
+		client_secret: config.clientSecret,
+		code_verifier: codeVerifier,
+		redirect_uri: config.redirectUri,
+		grant_type: "authorization_code",
+	});
+	debugTokenPayload("exchange", {
+		code,
+		client_id: config.clientId,
+		client_secret: config.clientSecret,
 		code_verifier: codeVerifier,
 		redirect_uri: config.redirectUri,
 		grant_type: "authorization_code",
@@ -125,6 +135,13 @@ export async function refreshAccessToken(
 	assertConfig(config);
 	const body = new URLSearchParams({
 		client_id: config.clientId,
+		client_secret: config.clientSecret,
+		refresh_token: refreshToken,
+		grant_type: "refresh_token",
+	});
+	debugTokenPayload("refresh", {
+		client_id: config.clientId,
+		client_secret: config.clientSecret,
 		refresh_token: refreshToken,
 		grant_type: "refresh_token",
 	});
@@ -183,10 +200,31 @@ function assertConfig(config: OAuthClientConfig): void {
 	if (!config.clientId.trim()) {
 		throw new Error("Google OAuth client ID is required.");
 	}
+	if (!config.clientSecret.trim()) {
+		throw new Error("Google OAuth client secret is required.");
+	}
 	if (!config.redirectUri.trim()) {
 		throw new Error("OAuth redirect URI is required.");
 	}
 	if (!config.scopes.length) {
 		throw new Error("At least one OAuth scope is required.");
 	}
+}
+
+function debugTokenPayload(kind: "exchange" | "refresh", payload: Record<string, string>): void {
+	const masked = {
+		...payload,
+		client_secret: maskSecret(payload.client_secret ?? ""),
+	};
+	console.log(`[dynamic-gcal] oauth ${kind} payload`, masked);
+}
+
+function maskSecret(secret: string): string {
+	if (!secret) {
+		return "";
+	}
+	if (secret.length <= 6) {
+		return "***";
+	}
+	return `${secret.slice(0, 2)}***${secret.slice(-2)}`;
 }

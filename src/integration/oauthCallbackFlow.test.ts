@@ -4,7 +4,8 @@ import { handleOAuthCallbackFlow } from "../main";
 
 const oauthConfig = {
 	clientId: "client-id",
-	redirectUri: "obsidian://gcal-auth",
+	clientSecret: "client-secret",
+	redirectUri: "https://bumkeyy.github.io/obsidian-dynamic-gcal/",
 	scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
 };
 

@@ -13,6 +13,7 @@ import { ReactChild } from "./view/ReactChild";
 
 const REDIRECT_URI = "https://bumkeyy.github.io/obsidian-dynamic-gcal/";
 const MIN_VALIDITY_MS = 60_000;
+const PENDING_AUTH_STORAGE_KEY = "obsidian-dynamic-gcal:pending-auth";
 
 interface PendingAuthSession {
 	state: string;
@@ -168,6 +169,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 				state: authRequest.state,
 				codeVerifier: authRequest.codeVerifier,
 			};
+			this.persistPendingAuthSession(this.pendingAuth);
 			this.settings.authState = {
 				status: "pending",
 				message: "Waiting for OAuth callback...",
@@ -201,6 +203,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 
 		this.runtimeAccessToken = undefined;
 		this.pendingAuth = undefined;
+		this.clearPendingAuthSession();
 		this.settings.tokens = undefined;
 		this.settings.authState = {
 			status: "logged_out",
@@ -223,9 +226,10 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 
 	private async handleOAuthCallback(params: Record<string, string>): Promise<void> {
 		try {
+			const pendingAuth = this.pendingAuth ?? this.loadPendingAuthSession();
 			const tokenBundle = await handleOAuthCallbackFlow({
 				params,
-				pendingAuth: this.pendingAuth,
+				pendingAuth,
 				oauthConfig: this.getOAuthConfig(),
 			});
 
@@ -249,6 +253,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 			new Notice(message);
 		} finally {
 			this.pendingAuth = undefined;
+			this.clearPendingAuthSession();
 		}
 	}
 
@@ -343,11 +348,13 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 
 	private tryGetOAuthConfig(): OAuthClientConfig | undefined {
 		const clientId = this.settings.googleClientId.trim();
-		if (!clientId) {
+		const clientSecret = this.settings.googleClientSecret.trim();
+		if (!clientId || !clientSecret) {
 			return undefined;
 		}
 		return {
 			clientId,
+			clientSecret,
 			redirectUri: REDIRECT_URI,
 			scopes: [GCAL_READONLY_SCOPE],
 		};
@@ -356,9 +363,41 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 	private getOAuthConfig(): OAuthClientConfig {
 		const config = this.tryGetOAuthConfig();
 		if (!config) {
-			throw new Error("Google OAuth client ID is required.");
+			throw new Error("Google OAuth client ID and client secret are required.");
 		}
 		return config;
+	}
+
+	private persistPendingAuthSession(session: PendingAuthSession): void {
+		try {
+			localStorage.setItem(PENDING_AUTH_STORAGE_KEY, JSON.stringify(session));
+		} catch {
+			// Ignore storage errors and keep in-memory fallback.
+		}
+	}
+
+	private loadPendingAuthSession(): PendingAuthSession | undefined {
+		try {
+			const raw = localStorage.getItem(PENDING_AUTH_STORAGE_KEY);
+			if (!raw) {
+				return undefined;
+			}
+			const parsed = JSON.parse(raw) as Partial<PendingAuthSession>;
+			if (typeof parsed.state === "string" && typeof parsed.codeVerifier === "string") {
+				return { state: parsed.state, codeVerifier: parsed.codeVerifier };
+			}
+		} catch {
+			// Ignore invalid storage payloads.
+		}
+		return undefined;
+	}
+
+	private clearPendingAuthSession(): void {
+		try {
+			localStorage.removeItem(PENDING_AUTH_STORAGE_KEY);
+		} catch {
+			// Ignore storage errors.
+		}
 	}
 }
 

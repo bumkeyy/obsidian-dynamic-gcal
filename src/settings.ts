@@ -29,6 +29,20 @@ export class DynamicGcalSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Google OAuth client secret")
+			.setDesc("Required because this integration uses a Google Web Application client.")
+			.addText((text) => {
+				text.inputEl.type = "password";
+				text
+					.setPlaceholder("GOCSPX-...")
+					.setValue(this.plugin.settings.googleClientSecret)
+					.onChange(async (value) => {
+						this.plugin.settings.googleClientSecret = value.trim();
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Security warning")
 			.setDesc(
 				"OAuth tokens are stored in plain text using plugin data (saveData). Anyone with access to this vault or device can read them.",

@@ -12,10 +12,11 @@
 ## Setup
 
 1. Create a Google OAuth client for an installed app.
-2. Set redirect URI to `obsidian://gcal-auth`.
+2. Set redirect URI to `https://bumkeyy.github.io/obsidian-dynamic-gcal/`.
 3. Open plugin settings and enter your OAuth Client ID.
-4. Review the plain-text token storage warning in settings.
-5. Select **Login to Google**.
+4. Enter your OAuth Client Secret.
+5. Review the plain-text token storage warning in settings.
+6. Select **Login to Google**.
 
 ## Usage
 
@@ -47,6 +48,7 @@ If date cannot be resolved:
 - OAuth scope is fixed to `calendar.readonly`.
 - PKCE is used for OAuth (`S256`).
 - OAuth callback state is strictly validated.
+- The token exchange request includes `code_verifier`, `client_secret`, and the HTTPS `redirect_uri`.
 - OAuth tokens are stored in plain text in plugin data via `this.saveData()`.
 - Anyone with access to your vault files or device can read stored tokens.
 - Logout revokes tokens (when available) and clears local token state.

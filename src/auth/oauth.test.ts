@@ -11,7 +11,8 @@ import {
 
 const config = {
 	clientId: "client-id",
-	redirectUri: "obsidian://gcal-auth",
+	clientSecret: "client-secret",
+	redirectUri: "https://bumkeyy.github.io/obsidian-dynamic-gcal/",
 	scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
 };
 
@@ -27,6 +28,7 @@ describe("oauth", () => {
 	});
 
 	it("exchanges auth code for tokens", async () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const fetchFn = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({
@@ -46,9 +48,25 @@ describe("oauth", () => {
 			scope: "calendar.readonly",
 			tokenType: "Bearer",
 		});
+		expect(fetchFn).toHaveBeenCalledTimes(1);
+		const [, init] = fetchFn.mock.calls[0] as [string, RequestInit];
+		const body = init.body as URLSearchParams;
+		expect(body.get("grant_type")).toBe("authorization_code");
+		expect(body.get("redirect_uri")).toBe(config.redirectUri);
+		expect(body.get("code_verifier")).toBe("verifier");
+		expect(body.get("client_secret")).toBe(config.clientSecret);
+		expect(logSpy).toHaveBeenCalledWith(
+			"[dynamic-gcal] oauth exchange payload",
+			expect.objectContaining({
+				client_secret: "cl***et",
+				grant_type: "authorization_code",
+			}),
+		);
+		logSpy.mockRestore();
 	});
 
 	it("refreshes access token and preserves refresh token", async () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const fetchFn = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({
@@ -61,6 +79,18 @@ describe("oauth", () => {
 		expect(token.accessToken).toBe("next-access-token");
 		expect(token.refreshToken).toBe("refresh-token");
 		expect(token.expiresAt).toBe(1_205_000);
+		const [, init] = fetchFn.mock.calls[0] as [string, RequestInit];
+		const body = init.body as URLSearchParams;
+		expect(body.get("grant_type")).toBe("refresh_token");
+		expect(body.get("client_secret")).toBe(config.clientSecret);
+		expect(logSpy).toHaveBeenCalledWith(
+			"[dynamic-gcal] oauth refresh payload",
+			expect.objectContaining({
+				client_secret: "cl***et",
+				grant_type: "refresh_token",
+			}),
+		);
+		logSpy.mockRestore();
 	});
 
 	it("parses callback params and validates state", () => {

@@ -26,6 +26,7 @@ export interface AuthState {
 
 export interface DynamicGcalSettings {
 	googleClientId: string;
+	googleClientSecret: string;
 	tokens?: TokenBundle;
 	authState: AuthState;
 	defaultCalendarIds: string[];
@@ -34,6 +35,7 @@ export interface DynamicGcalSettings {
 
 export const DEFAULT_SETTINGS: DynamicGcalSettings = {
 	googleClientId: "",
+	googleClientSecret: "",
 	tokens: undefined,
 	authState: {
 		status: "logged_out",
