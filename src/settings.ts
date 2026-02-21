@@ -79,12 +79,15 @@ export class DynamicGcalSettingTab extends PluginSettingTab {
 					await this.plugin.startLoginFlow();
 					this.display();
 				}),
-			)
-			.addButton((button) =>
+			);
+
+		if (this.plugin.settings.authState.status !== "logged_in") {
+			new Setting(containerEl).addButton((button) =>
 				button.setButtonText("Logout").onClick(async () => {
 					await this.plugin.logout();
 					this.display();
 				}),
 			);
+		}
 	}
 }
