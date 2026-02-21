@@ -4,7 +4,6 @@ import { Notice, Plugin, TFile, type MarkdownPostProcessorContext } from "obsidi
 import { fetchCalendarEvents } from "./api/gcal";
 import { createAuthorizeRequest, assertCallbackState, exchangeCodeForTokens, parseOAuthCallbackParams, refreshAccessToken, revokeToken, type OAuthClientConfig } from "./auth/oauth";
 import { generateCodeVerifier } from "./auth/pkce";
-import { decryptRefreshToken, encryptRefreshToken } from "./auth/tokenVault";
 import { parseGcalBlock } from "./core/parseGcalBlock";
 import { resolveTargetDate } from "./core/resolveTargetDate";
 import { DynamicGcalSettingTab } from "./settings";
@@ -97,7 +96,6 @@ export async function runCodeBlockRenderFlow(input: CodeBlockRenderFlowInput): P
 
 export default class DynamicGoogleCalendarPlugin extends Plugin {
 	settings: DynamicGcalSettings;
-	private sessionPassphrase = "";
 	private runtimeAccessToken: string | undefined;
 	private pendingAuth: PendingAuthSession | undefined;
 
@@ -160,16 +158,9 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 		this.addSettingTab(new DynamicGcalSettingTab(this.app, this));
 	}
 
-	setSessionPassphrase(passphrase: string): void {
-		this.sessionPassphrase = passphrase;
-	}
-
 	async startLoginFlow(): Promise<void> {
 		try {
 			const config = this.getOAuthConfig();
-			if (!this.sessionPassphrase.trim()) {
-				throw new Error("Session passphrase is required before login.");
-			}
 
 			const codeVerifier = generateCodeVerifier();
 			const authRequest = await createAuthorizeRequest(config, codeVerifier);
@@ -180,7 +171,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 			this.settings.authState = {
 				status: "pending",
 				message: "Waiting for OAuth callback...",
-				hasRefreshToken: Boolean(this.settings.encryptedRefreshToken),
+				hasRefreshToken: Boolean(this.settings.tokens?.refreshToken),
 			};
 			await this.saveSettings();
 			window.open(authRequest.url, "_blank");
@@ -190,7 +181,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 			this.settings.authState = {
 				status: "error",
 				message,
-				hasRefreshToken: Boolean(this.settings.encryptedRefreshToken),
+				hasRefreshToken: Boolean(this.settings.tokens?.refreshToken),
 			};
 			await this.saveSettings();
 		}
@@ -203,18 +194,14 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 		if (config && runtimeAccessToken) {
 			await safeExecute(() => revokeToken(config, runtimeAccessToken));
 		}
-		const encryptedRefreshToken = this.settings.encryptedRefreshToken;
-		if (config && encryptedRefreshToken && this.sessionPassphrase.trim()) {
-			await safeExecute(async () => {
-				const refreshToken = await decryptRefreshToken(encryptedRefreshToken, this.sessionPassphrase);
-				await revokeToken(config, refreshToken);
-			});
+		const refreshToken = this.settings.tokens?.refreshToken;
+		if (config && refreshToken) {
+			await safeExecute(() => revokeToken(config, refreshToken));
 		}
 
 		this.runtimeAccessToken = undefined;
 		this.pendingAuth = undefined;
-		this.settings.encryptedRefreshToken = undefined;
-		this.settings.tokenMeta = undefined;
+		this.settings.tokens = undefined;
 		this.settings.authState = {
 			status: "logged_out",
 			message: "Disconnected",
@@ -227,6 +214,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 	async loadSettings(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<DynamicGcalSettings>);
 		this.settings.defaultCalendarIds = this.settings.defaultCalendarIds ?? [];
+		this.runtimeAccessToken = this.settings.tokens?.accessToken;
 	}
 
 	async saveSettings(): Promise<void> {
@@ -242,21 +230,11 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 			});
 
 			this.runtimeAccessToken = tokenBundle.accessToken;
-			if (tokenBundle.refreshToken) {
-				if (!this.sessionPassphrase.trim()) {
-					throw new Error("Session passphrase is required to store refresh tokens.");
-				}
-				this.settings.encryptedRefreshToken = await encryptRefreshToken(tokenBundle.refreshToken, this.sessionPassphrase);
-			}
-			this.settings.tokenMeta = {
-				expiresAt: tokenBundle.expiresAt,
-				scope: tokenBundle.scope,
-				tokenType: tokenBundle.tokenType,
-			};
+			this.settings.tokens = tokenBundle;
 			this.settings.authState = {
 				status: "logged_in",
 				message: "Connected to Google Calendar",
-				hasRefreshToken: Boolean(this.settings.encryptedRefreshToken),
+				hasRefreshToken: Boolean(this.settings.tokens?.refreshToken),
 			};
 			await this.saveSettings();
 			new Notice("Google Calendar login complete.");
@@ -265,7 +243,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 			this.settings.authState = {
 				status: "error",
 				message,
-				hasRefreshToken: Boolean(this.settings.encryptedRefreshToken),
+				hasRefreshToken: Boolean(this.settings.tokens?.refreshToken),
 			};
 			await this.saveSettings();
 			new Notice(message);
@@ -330,7 +308,7 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 	}
 
 	private async getValidAccessToken(): Promise<string> {
-		if (this.runtimeAccessToken && !isExpiringSoon(this.settings.tokenMeta?.expiresAt)) {
+		if (this.runtimeAccessToken && !isExpiringSoon(this.settings.tokens?.expiresAt)) {
 			return this.runtimeAccessToken;
 		}
 
@@ -343,30 +321,21 @@ export default class DynamicGoogleCalendarPlugin extends Plugin {
 	}
 
 	private async refreshAccessTokenFromStoredToken(): Promise<string | undefined> {
-		if (!this.settings.encryptedRefreshToken) {
+		const refreshToken = this.settings.tokens?.refreshToken;
+		if (!refreshToken) {
 			return undefined;
 		}
-		if (!this.sessionPassphrase.trim()) {
-			throw new Error("Session passphrase is required to unlock the stored token.");
-		}
-
-		const refreshToken = await decryptRefreshToken(this.settings.encryptedRefreshToken, this.sessionPassphrase);
 		const refreshed = await refreshAccessToken(this.getOAuthConfig(), refreshToken);
 		this.runtimeAccessToken = refreshed.accessToken;
-		this.settings.tokenMeta = {
-			expiresAt: refreshed.expiresAt,
-			scope: refreshed.scope,
-			tokenType: refreshed.tokenType,
+		this.settings.tokens = {
+			...refreshed,
+			refreshToken: refreshed.refreshToken ?? refreshToken,
 		};
-
-		if (refreshed.refreshToken) {
-			this.settings.encryptedRefreshToken = await encryptRefreshToken(refreshed.refreshToken, this.sessionPassphrase);
-		}
 
 		this.settings.authState = {
 			status: "logged_in",
 			message: "Connected to Google Calendar",
-			hasRefreshToken: Boolean(this.settings.encryptedRefreshToken),
+			hasRefreshToken: Boolean(this.settings.tokens?.refreshToken),
 		};
 		await this.saveSettings();
 		return this.runtimeAccessToken;

@@ -14,7 +14,7 @@
 1. Create a Google OAuth client for an installed app.
 2. Set redirect URI to `obsidian://gcal-auth`.
 3. Open plugin settings and enter your OAuth Client ID.
-4. Enter a session passphrase (used to encrypt/decrypt your refresh token).
+4. Review the plain-text token storage warning in settings.
 5. Select **Login to Google**.
 
 ## Usage
@@ -47,9 +47,8 @@ If date cannot be resolved:
 - OAuth scope is fixed to `calendar.readonly`.
 - PKCE is used for OAuth (`S256`).
 - OAuth callback state is strictly validated.
-- `access_token` is kept in memory only.
-- `refresh_token` is encrypted with Web Crypto (`PBKDF2 + AES-GCM`) before `saveData`.
-- Passphrase is session-only and not persisted by the plugin.
+- OAuth tokens are stored in plain text in plugin data via `this.saveData()`.
+- Anyone with access to your vault files or device can read stored tokens.
 - Logout revokes tokens (when available) and clears local token state.
 
 ## Development
@@ -63,7 +62,7 @@ npm run build
 ## Testing coverage
 
 - Core parsing/date fallback utilities
-- PKCE and encrypted token vault
+- PKCE and OAuth state validation
 - OAuth exchange/refresh/revoke flow
 - Calendar API matching/normalization/sorting
 - React mount/unmount lifecycle

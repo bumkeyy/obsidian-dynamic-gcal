@@ -29,14 +29,10 @@ export class DynamicGcalSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Session passphrase")
-			.setDesc("Used to encrypt and decrypt the stored refresh token in this session.")
-			.addText((text) => {
-				text.inputEl.type = "password";
-				text.setPlaceholder("Enter passphrase").onChange((value: string) => {
-					this.plugin.setSessionPassphrase(value);
-				});
-			});
+			.setName("Security warning")
+			.setDesc(
+				"OAuth tokens are stored in plain text using plugin data (saveData). Anyone with access to this vault or device can read them.",
+			);
 
 		new Setting(containerEl)
 			.setName("Default calendars")
